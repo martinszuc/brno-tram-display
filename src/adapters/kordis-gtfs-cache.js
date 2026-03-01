@@ -15,7 +15,7 @@ import {
 import { normalizeForSearch } from "../utils/string.js";
 import {
   GTFS_URL,
-  GTFS_ROUTE_TYPE_TRAM,
+  GTFS_INCLUDED_ROUTE_TYPES,
   ONE_DAY_MS,
 } from "../config/constants.js";
 
@@ -95,7 +95,7 @@ function buildTripsMap(trips, routesMap, activeServiceIds) {
     const id = row.trip_id ?? row.tripid;
     if (!id || !serviceFilter(row.service_id ?? row.serviceid)) continue;
     const route = routesMap.get(row.route_id ?? row.routeid);
-    if (!route || route.routeType !== GTFS_ROUTE_TYPE_TRAM) continue;
+    if (!route || !GTFS_INCLUDED_ROUTE_TYPES.has(String(route.routeType))) continue;
     map.set(id, {
       routeId: row.route_id ?? row.routeid,
       headsign: row.trip_headsign ?? row.tripheadsign ?? "",
