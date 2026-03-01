@@ -2,24 +2,49 @@
  * Brno tram display — entry point.
  * Fetches departures for configured stops on a polling loop and renders to terminal.
  * Uses KORDIS GTFS + Brno ArcGIS vehicle positions — no API key required.
+ *
+ * Configure stops via the STOPS environment variable (JSON array) or src/config/stops.js.
+ * Each stop supports:
+ *   stopId    — GTFS stop_id (required)
+ *   name      — display label (required)
+ *   direction — headsign substring filter, accent/case-insensitive (optional)
+ *   lines     — array of routeShortName strings to include, e.g. ["3","7"] (optional)
  */
 
 import { fetchDepartures, configure } from "./src/adapters/kordis.js";
-import { STOPS } from "./src/config/stops.js";
+import { STOPS as STOPS_FROM_CONFIG } from "./src/config/stops.js";
 
 const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || "30000", 10);
 const DEPARTURES_PER_STOP = parseInt(process.env.DEPARTURES_PER_STOP || "10", 10);
 const DEPARTURES_WINDOW_MINUTES = parseInt(process.env.DEPARTURES_WINDOW_MINUTES || "90", 10);
 const GTFS_REFRESH_INTERVAL_MS = parseInt(process.env.GTFS_REFRESH_INTERVAL_MS || "86400000", 10);
 
-// ansi colours — keep it readable on dark terminal backgrounds
-const RESET = "\x1b[0m";
-const BOLD = "\x1b[1m";
-const DIM = "\x1b[2m";
-const GREEN = "\x1b[32m";
+/**
+ * Resolve stop list: STOPS env var (JSON) takes priority over config file.
+ */
+function resolveStops() {
+    if (process.env.STOPS) {
+        try {
+            const parsed = JSON.parse(process.env.STOPS);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+            throw new Error("STOPS must be a non-empty JSON array");
+        } catch (err) {
+            throw new Error(`invalid STOPS env var: ${err.message}`);
+        }
+    }
+    return STOPS_FROM_CONFIG;
+}
+
+const STOPS = resolveStops();
+
+// ansi colours
+const RESET  = "\x1b[0m";
+const BOLD   = "\x1b[1m";
+const DIM    = "\x1b[2m";
+const GREEN  = "\x1b[32m";
 const YELLOW = "\x1b[33m";
-const CYAN = "\x1b[36m";
-const RED = "\x1b[31m";
+const CYAN   = "\x1b[36m";
+const RED    = "\x1b[31m";
 
 configure({
     gtfsRefreshIntervalMs: GTFS_REFRESH_INTERVAL_MS,
@@ -46,34 +71,71 @@ function formatDelay(delaySeconds, isRealtime) {
     const mins = Math.round(delaySeconds / 60);
     if (mins === 0) return `${GREEN}on time${RESET}`;
     if (mins > 0) return `${YELLOW}+${mins} min${RESET}`;
-    return `${GREEN}${mins} min early${RESET}`;
+    return `${GREEN}${Math.abs(mins)} min early${RESET}`;
+}
+
+/**
+ * Accent/case-insensitive normalisation for headsign matching.
+ */
+function norm(s) {
+    return (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+/**
+ * Apply direction and lines filters to a departure list.
+ * direction — headsign substring match (optional)
+ * lines     — whitelist of routeShortName strings (optional)
+ */
+function applyFilters(departures, { direction, lines }) {
+    let result = departures;
+
+    if (direction) {
+        const needle = norm(direction);
+        result = result.filter((dep) => norm(dep.headsign).includes(needle));
+    }
+
+    if (lines && lines.length > 0) {
+        // normalise to strings so config ["3"] matches routeShortName "3"
+        const allowed = new Set(lines.map(String));
+        result = result.filter((dep) => allowed.has(String(dep.routeShortName)));
+    }
+
+    return result;
+}
+
+/**
+ * Build a concise label showing active filters for the header line.
+ */
+function filterLabel(stop) {
+    const parts = [];
+    if (stop.direction) parts.push(`→ ${stop.direction}`);
+    if (stop.lines && stop.lines.length > 0) parts.push(`line ${stop.lines.join("/")}`);
+    return parts.length > 0 ? `  ${parts.join("  ")}` : "";
 }
 
 /**
  * Render all stops and their departures to stdout.
  */
 function renderDepartures(stopResults) {
-    // clear screen each cycle so it reads like a real display board
+    // clear screen so it reads like a real departure board
     process.stdout.write("\x1b[2J\x1b[H");
 
     const now = new Date();
-    console.log(
-        `${BOLD}${CYAN}Brno Tram Display${RESET}  ${DIM}updated ${formatTime(now)}${RESET}\n`
-    );
+    console.log(`${BOLD}${CYAN}Brno Tram Display${RESET}  ${DIM}updated ${formatTime(now)}${RESET}\n`);
 
     for (const { stop, departures, error } of stopResults) {
-        console.log(`${BOLD}${stop.name}${RESET}  ${DIM}(${stop.stopId})${RESET}`);
+        console.log(`${BOLD}${stop.name}${RESET}${CYAN}${filterLabel(stop)}${RESET}  ${DIM}(${stop.stopId})${RESET}`);
         console.log("─".repeat(60));
 
         if (error) {
-            console.log(`  ${RED}error fetching departures: ${error}${RESET}`);
+            console.log(`  ${RED}error: ${error}${RESET}`);
         } else if (departures.length === 0) {
             console.log(`  ${DIM}no departures in the next ${DEPARTURES_WINDOW_MINUTES} minutes${RESET}`);
         } else {
             for (const dep of departures.slice(0, DEPARTURES_PER_STOP)) {
-                const line = `${BOLD}${dep.routeShortName.padEnd(4)}${RESET}`;
-                const dest = dep.headsign.padEnd(30);
-                const time = formatTime(dep.time);
+                const line  = `${BOLD}${dep.routeShortName.padEnd(4)}${RESET}`;
+                const dest  = dep.headsign.padEnd(30);
+                const time  = formatTime(dep.time);
                 const delay = formatDelay(dep.delaySeconds, dep.isRealtime);
                 console.log(`  ${line} ${dest} ${CYAN}${time}${RESET}  ${delay}`);
             }
@@ -83,16 +145,16 @@ function renderDepartures(stopResults) {
 }
 
 /**
- * Fetch departures for all configured stops in parallel.
+ * Fetch and filter departures for all configured stops in parallel.
  */
 async function fetchAllStops() {
     return Promise.all(
         STOPS.map(async (stop) => {
             try {
-                const departures = await fetchDepartures(stop.stopId, null, {
+                let departures = await fetchDepartures(stop.stopId, null, {
                     windowMinutes: DEPARTURES_WINDOW_MINUTES,
                 });
-                // sort by real ETA ascending
+                departures = applyFilters(departures, stop);
                 departures.sort((a, b) => a.time - b.time);
                 return { stop, departures, error: null };
             } catch (err) {
@@ -112,18 +174,16 @@ async function tick() {
 }
 
 async function main() {
-    console.log(
-        `brno-tram-display starting — polling every ${POLL_INTERVAL_MS / 1000}s` +
-        ` for ${STOPS.length} stop(s)\n`
-    );
+    const stopSummary = STOPS.map((s) => `${s.name}${filterLabel(s)}`).join(", ");
+    console.log(`brno-tram-display starting — ${STOPS.length} stop(s): ${stopSummary}`);
+    console.log(`polling every ${POLL_INTERVAL_MS / 1000}s\n`);
     console.log("downloading GTFS data (first run may take a few seconds)…\n");
 
-    // run immediately, then on interval
     await tick();
     setInterval(tick, POLL_INTERVAL_MS);
 }
 
 main().catch((err) => {
-    console.error("fatal error:", err);
+    console.error("fatal:", err);
     process.exit(1);
 });

@@ -3,23 +3,17 @@ services:
     build: .
     restart: unless-stopped
     environment:
-      # how often to refresh departures (ms)
       POLL_INTERVAL_MS: 30000
-      # departures to show per stop
       DEPARTURES_PER_STOP: 10
-      # how far ahead to look (minutes)
       DEPARTURES_WINDOW_MINUTES: 90
-      # how often to re-download GTFS (ms) — 24h default
       GTFS_REFRESH_INTERVAL_MS: 86400000
 
-      # configure stops as a JSON array:
-      #   stopId   — from GTFS stops.txt (run find-stops script to look up)
-      #   name     — display label, anything you like
-      #   direction — optional headsign substring filter, case-insensitive
-      #               e.g. "Řečkovice" only shows trams going that way
-      #               omit or leave empty to show all directions
+      # direction filters use headsign substring match — case/accent-insensitive
+      # line filter uses routeShortName exact match (string)
       STOPS: |
         [
-          { "stopId": "U1146Z2", "name": "Hlavní nádraží", "direction": "" },
-          { "stopId": "U1146Z1", "name": "Hlavní nádraží", "direction": "" }
+          { "stopId": "U1398Z2", "name": "Mostecká",    "direction": "" },
+          { "stopId": "U1782Z2", "name": "Zdráhalova",  "direction": "" },
+          { "stopId": "U1667Z2", "name": "Tomanova",    "direction": "" },
+          { "stopId": "U1211Z8", "name": "Jugoslávská", "direction": "", "lines": ["3"] }
         ]
