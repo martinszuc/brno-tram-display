@@ -1,0 +1,15 @@
+{
+  "name": "brno-tram-display",
+  "version": "1.0.0",
+  "description": "Brno tram departure display using KORDIS GTFS and live vehicle positions",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "node-fetch": "^3.3.2"
+  }
+}
