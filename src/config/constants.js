@@ -4,7 +4,7 @@
 
 export const ONE_DAY_MS = 86400000;
 export const ONE_HOUR_MS = 3600000;
-export const CACHE_TTL_REALTIME_MS = 10000;
+export const CACHE_TTL_REALTIME_MS = 30000;
 
 export const GTFS_URL =
   "https://kordis-jmk.cz/gtfs/gtfs.zip";

@@ -14,3 +14,6 @@ services:
       GTFS_REFRESH_INTERVAL_MS: 86400000
 
       # Stop config lives in src/config/stops.js — edit there, not here
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
