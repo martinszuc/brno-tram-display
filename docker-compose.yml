@@ -1,5 +1,6 @@
 services:
   tram-display:
+    container_name: brno-tram-display
     build: .
     restart: unless-stopped
     ports:

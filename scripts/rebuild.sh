@@ -12,9 +12,9 @@ for arg in "$@"; do
     esac
 done
 
-APP_DIR="/home/sysadmin/brno-tram-display"
+APP_DIR="/home/sysadmin/services/brno-tram-display"
 SERVICE_NAME="tram-display"
-CONTAINER_NAME="brno-tram-display-tram-display-1"
+CONTAINER_NAME="brno-tram-display"
 
 echo "=== Brno Tram Display - Rebuild ==="
 echo ""
