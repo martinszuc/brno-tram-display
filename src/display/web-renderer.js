@@ -37,6 +37,8 @@ table{width:100%;border-collapse:collapse}
 td{padding:24px 0;border-bottom:1px solid #1a1a1a;vertical-align:middle;transition:border-bottom-color ${TRANSITION}}
 td.line{font-weight:700;color:#fff;padding-right:28px;white-space:nowrap;width:80px;transition:color ${TRANSITION}}
 td.stop{color:#aaa;font-size:50px;padding-right:28px;white-space:nowrap;transition:color ${TRANSITION}}
+.logo-box{display:inline-block;width:2.5em;text-align:center;vertical-align:middle;margin-right:0.35em;flex-shrink:0}
+.logo-box img{height:0.8em;max-width:100%;vertical-align:middle;opacity:0.85}
 td.mins{color:#e87c2a;font-size:38px;white-space:nowrap;width:160px;transition:color ${TRANSITION}}
 td.mins .n{font-size:54px;font-weight:700;color:#f5c87a;transition:color ${TRANSITION}}
 @keyframes urgentBreath{0%,100%{opacity:1}50%{opacity:0.2}}
@@ -267,9 +269,10 @@ function buildRow(d) {
   const iso = d.time.toISOString();
   const delayMins = d.isRealtime ? Math.round(d.delaySeconds / 60) : 0;
   const delayBadge = delayMins > 0 ? `<span class="delay">+${delayMins}m</span>` : "";
-  const logoHtml = d.stopLogo
-    ? `<img src="/res/${htmlEscape(d.stopLogo)}" alt=""${d.stopLogo === "City-icon.png" ? ' class="city-logo"' : ''} style="height:0.8em;vertical-align:middle;margin-right:0.35em;opacity:0.85">`
+  const logoInner = d.stopLogo
+    ? `<img src="/res/${htmlEscape(d.stopLogo)}" alt=""${d.stopLogo === "City-icon.png" ? ' class="city-logo"' : ''}>`
     : "";
+  const logoHtml = `<span class="logo-box">${logoInner}</span>`;
   const key = d.tripId ? htmlEscape(d.tripId) : `${htmlEscape(d.routeShortName)}-${iso}`;
   return { iso, key, delayBadge, logoHtml };
 }
