@@ -268,7 +268,7 @@ function buildRow(d) {
   const delayMins = d.isRealtime ? Math.round(d.delaySeconds / 60) : 0;
   const delayBadge = delayMins > 0 ? `<span class="delay">+${delayMins}m</span>` : "";
   const logoHtml = d.stopLogo
-    ? `<img src="/res/${htmlEscape(d.stopLogo)}" alt=""${d.stopLogo === "City-icon.png" ? ' class="city-logo"' : ''} style="height:0.8em;vertical-align:middle;margin-left:0.35em;opacity:0.85">`
+    ? `<img src="/res/${htmlEscape(d.stopLogo)}" alt=""${d.stopLogo === "City-icon.png" ? ' class="city-logo"' : ''} style="height:0.8em;vertical-align:middle;margin-right:0.35em;opacity:0.85">`
     : "";
   const key = d.tripId ? htmlEscape(d.tripId) : `${htmlEscape(d.routeShortName)}-${iso}`;
   return { iso, key, delayBadge, logoHtml };
@@ -280,7 +280,7 @@ function buildRows(departures) {
     const { iso, key, delayBadge, logoHtml } = buildRow(d);
     return `<tr data-key="${key}" data-min="${d.minMinutes ?? 1}">
   <td class="line">${htmlEscape(d.routeShortName)}</td>
-  <td class="stop">${htmlEscape(d.stopName)}${logoHtml}</td>
+  <td class="stop">${logoHtml}${htmlEscape(d.stopName)}</td>
   <td class="mins" data-time="${iso}">—</td>
   <td class="time">${formatTime(d.scheduledTime ?? d.time)}${delayBadge}</td>
 </tr>`;
@@ -293,7 +293,7 @@ export function renderRows(departures) {
     const { iso, key, delayBadge, logoHtml } = buildRow(d);
     return `<tr class="enter" data-key="${key}" data-min="${d.minMinutes ?? 1}">
   <td class="line">${htmlEscape(d.routeShortName)}</td>
-  <td class="stop">${htmlEscape(d.stopName)}${logoHtml}</td>
+  <td class="stop">${logoHtml}${htmlEscape(d.stopName)}</td>
   <td class="mins" data-time="${iso}">—</td>
   <td class="time">${formatTime(d.scheduledTime ?? d.time)}${delayBadge}</td>
 </tr>`;
