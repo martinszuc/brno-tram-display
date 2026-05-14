@@ -26,7 +26,16 @@ function findAlert(currentCode, hourlyTimes, hourlyCodes, windowHours = 3) {
 
   const nowPragueHour = new Date().toLocaleString("sv", { timeZone: "Europe/Prague" }).slice(0, 13).replace(" ", "T");
   const baseIdx = hourlyTimes.findIndex((t) => t.startsWith(nowPragueHour));
-  if (baseIdx === -1) return null;
+  if (baseIdx === -1) {
+    console.warn(`[openmeteo] could not find current hour ${nowPragueHour} in hourly data`);
+    return null;
+  }
+
+  const upcoming = Array.from({ length: windowHours }, (_, i) => {
+    const idx = baseIdx + i + 1;
+    return `+${i + 1}h:${hourlyCodes[idx] ?? "?"}`;
+  }).join(" ");
+  console.log(`[openmeteo] hourly codes — now:${currentCode} ${upcoming}`);
 
   for (let h = 1; h <= windowHours; h++) {
     const code = Number(hourlyCodes[baseIdx + h]);
