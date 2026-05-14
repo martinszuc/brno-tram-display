@@ -33,7 +33,7 @@ body.no-transition,body.no-transition *{transition:none!important}
 #clock{font-size:56px;font-weight:700;color:#fff;letter-spacing:0.04em;transition:color ${TRANSITION}}
 #date{font-size:44px;font-weight:700;color:#aaa;letter-spacing:0.03em;white-space:nowrap;flex-shrink:0;transition:color ${TRANSITION}}
 #temp{font-size:48px;color:#7ecfff;transition:color ${TRANSITION}}
-#temp-apparent{font-size:28px;color:#7ecfff;opacity:0.55;margin-left:0.4em;transition:color ${TRANSITION}}
+#temp-apparent{font-size:36px;color:#7ecfff;opacity:0.55;margin-left:0.4em;transition:color ${TRANSITION}}
 table{width:100%;border-collapse:collapse}
 td{padding:24px 0;border-bottom:1px solid #1a1a1a;vertical-align:middle;transition:border-bottom-color ${TRANSITION}}
 td.line{font-weight:700;color:#fff;padding-right:28px;white-space:nowrap;width:80px;transition:color ${TRANSITION}}
