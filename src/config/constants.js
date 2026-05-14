@@ -30,3 +30,5 @@ export const OPENMETEO_URL =
   "&current=temperature_2m,apparent_temperature,weather_code" +
   "&hourly=weather_code&daily=sunrise,sunset&forecast_days=2&timezone=Europe%2FPrague";
 export const CACHE_TTL_WEATHER_MS = 10 * 60 * 1000; // 10 min
+
+export const NAMEDAY_URL = "https://nameday.abalin.net/api/V2/today";

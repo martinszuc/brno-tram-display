@@ -8,7 +8,7 @@
  */
 
 import http from "http";
-import { getAllDepartures, getWeather } from "./web-data.js";
+import { getAllDepartures, getWeather, getNameday } from "./web-data.js";
 import { renderHtml, renderJson, renderRows } from "./web-renderer.js";
 
 // explicit allowlist — never resolve arbitrary filenames from user input
@@ -62,23 +62,25 @@ async function handleRequest(stops, windowMinutes, url, headers) {
   }
 
   if (url === "/api/weather") {
-    const w = await getWeather();
+    const [w, nameday] = await Promise.all([getWeather(), getNameday()]);
     const alert = w?.alert;
     return { status: 200, contentType: "application/json; charset=utf-8", body: JSON.stringify({
       tempCelsius:     w?.temp     ?? null,
       apparentCelsius: w?.apparent ?? null,
       weatherAlert:    alert ? `${alert.emoji}${alert.hoursAhead ? ` in ${alert.hoursAhead}h` : " now"}` : null,
+      nameday:         nameday ?? null,
       sunrise: w?.sunrise ?? null,
       sunset:  w?.sunset  ?? null,
     }) };
   }
 
   if (url === "/" || url === "/index.html") {
-    const [deps, weather] = await Promise.all([
+    const [deps, weather, nameday] = await Promise.all([
       getAllDepartures(stops, windowMinutes),
       getWeather(),
+      getNameday(),
     ]);
-    return { status: 200, contentType: "text/html; charset=utf-8", body: renderHtml(deps, weather) };
+    return { status: 200, contentType: "text/html; charset=utf-8", body: renderHtml(deps, weather, nameday) };
   }
 
   return { status: 404, contentType: "text/plain", body: "Not found" };

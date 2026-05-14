@@ -34,7 +34,9 @@ body.no-transition,body.no-transition *{transition:none!important}
 #topbar{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:flex-end;margin-bottom:24px;background:rgba(185,157,255,0.04);border-radius:28px;padding:10px 32px}
 #date{text-align:center}
 #temp-block{justify-self:end}
+#clock-block{display:flex;align-items:baseline;gap:0.4em}
 #clock{font-size:56px;font-weight:700;color:#fff;letter-spacing:0.04em;transition:color ${TRANSITION}}
+#nameday{font-size:30px;color:#aaa;opacity:0.7;transition:color ${TRANSITION}}
 #date{font-size:44px;font-weight:700;color:#aaa;letter-spacing:0.03em;white-space:nowrap;flex-shrink:0;transition:color ${TRANSITION}}
 #temp-block{display:flex;align-items:baseline;gap:0.4em}
 #weather-alert{font-size:28px}
@@ -174,6 +176,8 @@ const CLIENT_JS = `
         if(ap) ap.textContent=data.apparentCelsius!=null?'('+data.apparentCelsius+'°C)':'';
         var wa=document.getElementById('weather-alert');
         if(wa) wa.textContent=data.weatherAlert||'';
+        var nd=document.getElementById('nameday');
+        if(nd&&data.nameday!=null) nd.textContent=data.nameday;
         if(data.sunrise) srISO=data.sunrise;
         if(data.sunset)  ssISO=data.sunset;
         applyMode();
@@ -320,8 +324,9 @@ export function renderRows(departures) {
 /**
  * @param {Array} departures
  * @param {{ temp: number|null, apparent: number|null, alert: {emoji:string,hoursAhead:number}|null, sunrise: string|null, sunset: string|null }|null} weather
+ * @param {string|null} nameday
  */
-export function renderHtml(departures, weather) {
+export function renderHtml(departures, weather, nameday = null) {
   const temp     = weather?.temp     ?? null;
   const apparent = weather?.apparent ?? null;
   const alert    = weather?.alert    ?? null;
@@ -345,7 +350,10 @@ export function renderHtml(departures, weather) {
 <body class="no-transition ${mode}">
 <script>window._SR=${JSON.stringify(sunrise)};window._SS=${JSON.stringify(sunset)};</script>
 <div id="topbar">
-  <div id="clock">—</div>
+  <div id="clock-block">
+    <div id="clock">—</div>
+    <div id="nameday">${nameday ?? ""}</div>
+  </div>
   <div id="date"></div>
   <div id="temp-block">
     <div id="weather-alert">${alertHtml}</div>
