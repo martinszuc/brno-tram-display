@@ -11,6 +11,31 @@ const DEBUG = !!process.env.DEBUG;
 let cached = null;
 let cacheTime = 0;
 
+function codeToEmoji(code) {
+  if (code >= 95) return "⛈";
+  if (code === 85 || code === 86 || (code >= 71 && code <= 77)) return "🌨";
+  if ((code >= 80 && code <= 82) || (code >= 61 && code <= 67)) return "🌧";
+  if (code >= 51 && code <= 57) return "🌦";
+  return null;
+}
+
+/** Scan hourly forecast for the first significant weather event within windowHours. */
+function findAlert(currentCode, hourlyTimes, hourlyCodes, windowHours = 3) {
+  const currentEmoji = codeToEmoji(currentCode);
+  if (currentEmoji) return { emoji: currentEmoji, hoursAhead: 0 };
+
+  const nowPragueHour = new Date().toLocaleString("sv", { timeZone: "Europe/Prague" }).slice(0, 13).replace(" ", "T");
+  const baseIdx = hourlyTimes.findIndex((t) => t.startsWith(nowPragueHour));
+  if (baseIdx === -1) return null;
+
+  for (let h = 1; h <= windowHours; h++) {
+    const code = Number(hourlyCodes[baseIdx + h]);
+    const emoji = codeToEmoji(code);
+    if (emoji) return { emoji, hoursAhead: h };
+  }
+  return null;
+}
+
 /** Convert open-meteo local datetime string (no TZ) to a proper ISO 8601 string. */
 function toZonedISO(localDateStr, utcOffsetSeconds) {
   const sign = utcOffsetSeconds >= 0 ? "+" : "-";
@@ -36,14 +61,18 @@ export async function getWeatherBrno() {
     const temp = json?.current?.temperature_2m;
     if (temp == null || Number.isNaN(Number(temp))) throw new Error("unexpected open-meteo response shape");
 
-    const apparent = json?.current?.apparent_temperature;
-    const offset = json?.utc_offset_seconds ?? 0;
-    const sunrise = json?.daily?.sunrise?.[0] ? toZonedISO(json.daily.sunrise[0], offset) : null;
-    const sunset  = json?.daily?.sunset?.[0]  ? toZonedISO(json.daily.sunset[0],  offset) : null;
+    const apparent     = json?.current?.apparent_temperature;
+    const currentCode  = json?.current?.weather_code ?? 0;
+    const hourlyTimes  = json?.hourly?.time ?? [];
+    const hourlyCodes  = json?.hourly?.weather_code ?? [];
+    const offset       = json?.utc_offset_seconds ?? 0;
+    const sunrise      = json?.daily?.sunrise?.[0] ? toZonedISO(json.daily.sunrise[0], offset) : null;
+    const sunset       = json?.daily?.sunset?.[0]  ? toZonedISO(json.daily.sunset[0],  offset) : null;
+    const alert        = findAlert(currentCode, hourlyTimes, hourlyCodes);
 
-    cached = { temp: Math.round(temp), apparent: apparent != null ? Math.round(apparent) : null, sunrise, sunset };
+    cached = { temp: Math.round(temp), apparent: apparent != null ? Math.round(apparent) : null, sunrise, sunset, alert };
     cacheTime = now;
-    console.log(`[openmeteo] ${cached.temp}°C (pocit ${cached.apparent}°C)  sunrise=${sunrise}  sunset=${sunset}`);
+    console.log(`[openmeteo] ${cached.temp}°C (pocit ${cached.apparent}°C)  alert=${alert ? alert.emoji + (alert.hoursAhead ? ` in ${alert.hoursAhead}h` : " now") : "none"}  sunrise=${sunrise}  sunset=${sunset}`);
     return cached;
   } catch (err) {
     console.warn("[openmeteo] fetch failed:", err.message);

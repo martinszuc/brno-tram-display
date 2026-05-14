@@ -63,9 +63,11 @@ async function handleRequest(stops, windowMinutes, url, headers) {
 
   if (url === "/api/weather") {
     const w = await getWeather();
+    const alert = w?.alert;
     return { status: 200, contentType: "application/json; charset=utf-8", body: JSON.stringify({
       tempCelsius:     w?.temp     ?? null,
       apparentCelsius: w?.apparent ?? null,
+      weatherAlert:    alert ? `${alert.emoji}${alert.hoursAhead ? ` in ${alert.hoursAhead}h` : " now"}` : null,
       sunrise: w?.sunrise ?? null,
       sunset:  w?.sunset  ?? null,
     }) };

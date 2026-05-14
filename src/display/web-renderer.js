@@ -31,9 +31,13 @@ const CSS = `
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0d0d0d;color:#c8c8c8;font-family:'Comic Neue','Comic Sans MS',cursive;font-size:58px;padding:32px;transition:background-color ${TRANSITION},color ${TRANSITION}}
 body.no-transition,body.no-transition *{transition:none!important}
-#topbar{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:24px}
+#topbar{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:flex-end;margin-bottom:24px}
+#date{text-align:center}
+#temp-block{justify-self:end}
 #clock{font-size:56px;font-weight:700;color:#fff;letter-spacing:0.04em;transition:color ${TRANSITION}}
 #date{font-size:44px;font-weight:700;color:#aaa;letter-spacing:0.03em;white-space:nowrap;flex-shrink:0;transition:color ${TRANSITION}}
+#temp-block{display:flex;align-items:baseline;gap:0.4em}
+#weather-alert{font-size:28px}
 #temp{font-size:48px;color:#7ecfff;transition:color ${TRANSITION}}
 #temp-apparent{font-size:36px;color:#7ecfff;opacity:0.55;margin-left:0.4em;transition:color ${TRANSITION}}
 table{width:100%;border-collapse:collapse}
@@ -168,6 +172,8 @@ const CLIENT_JS = `
         if(el&&data.tempCelsius!=null) el.textContent=data.tempCelsius+'°C';
         var ap=document.getElementById('temp-apparent');
         if(ap) ap.textContent=data.apparentCelsius!=null?'('+data.apparentCelsius+'°C)':'';
+        var wa=document.getElementById('weather-alert');
+        if(wa) wa.textContent=data.weatherAlert||'';
         if(data.sunrise) srISO=data.sunrise;
         if(data.sunset)  ssISO=data.sunset;
         applyMode();
@@ -313,15 +319,17 @@ export function renderRows(departures) {
 
 /**
  * @param {Array} departures
- * @param {{ temp: number|null, apparent: number|null, sunrise: string|null, sunset: string|null }|null} weather
+ * @param {{ temp: number|null, apparent: number|null, alert: {emoji:string,hoursAhead:number}|null, sunrise: string|null, sunset: string|null }|null} weather
  */
 export function renderHtml(departures, weather) {
   const temp     = weather?.temp     ?? null;
   const apparent = weather?.apparent ?? null;
+  const alert    = weather?.alert    ?? null;
   const sunrise  = weather?.sunrise  ?? null;
   const sunset   = weather?.sunset   ?? null;
-  const tempHtml = temp != null ? `${temp}°C` : "";
+  const tempHtml     = temp != null ? `${temp}°C` : "";
   const apparentHtml = apparent != null ? `(${apparent}°C)` : "";
+  const alertHtml    = alert ? `${alert.emoji}${alert.hoursAhead ? ` in ${alert.hoursAhead}h` : " now"}` : "";
   const mode     = computeMode(sunrise, sunset);
 
   return `<!DOCTYPE html>
@@ -339,7 +347,10 @@ export function renderHtml(departures, weather) {
 <div id="topbar">
   <div id="clock">—</div>
   <div id="date"></div>
-  <div id="temp">${tempHtml}<span id="temp-apparent">${apparentHtml}</span></div>
+  <div id="temp-block">
+    <div id="weather-alert">${alertHtml}</div>
+    <div id="temp">${tempHtml}<span id="temp-apparent">${apparentHtml}</span></div>
+  </div>
 </div>
 <table><tbody hx-get="/api/rows" hx-trigger="every 15s" hx-swap="innerHTML">${buildRows(departures)}</tbody></table>
 <script>${CLIENT_JS}</script>
