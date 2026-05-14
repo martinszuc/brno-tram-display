@@ -31,7 +31,7 @@ const CSS = `
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0d0d0d;color:#c8c8c8;font-family:'Comic Neue','Comic Sans MS',cursive;font-size:58px;padding:32px;transition:background-color ${TRANSITION},color ${TRANSITION}}
 body.no-transition,body.no-transition *{transition:none!important}
-#topbar{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:flex-end;margin-bottom:24px}
+#topbar{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:flex-end;margin-bottom:24px;background:rgba(185,157,255,0.04);border-radius:28px;padding:10px 32px}
 #date{text-align:center}
 #temp-block{justify-self:end}
 #clock{font-size:56px;font-weight:700;color:#fff;letter-spacing:0.04em;transition:color ${TRANSITION}}
