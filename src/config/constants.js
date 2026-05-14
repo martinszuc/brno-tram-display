@@ -21,7 +21,7 @@ export const STOP_ID_PREFIX = "U";
 export const LINE_ID_PREFIX = "L";
 
 export const TIMEZONE = "Europe/Prague";
-export const DEFAULT_WINDOW_MINUTES = 90;
+export const DEFAULT_WINDOW_MINUTES = 120;
 export const WEB_MAX_DISPLAY_ROWS = 6;
 
 export const OPENMETEO_URL =
