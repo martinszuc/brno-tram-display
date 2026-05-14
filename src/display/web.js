@@ -12,10 +12,17 @@ import { getAllDepartures, getWeather } from "./web-data.js";
 import { renderHtml, renderJson, renderRows } from "./web-renderer.js";
 
 // explicit allowlist — never resolve arbitrary filenames from user input
-const STATIC_FILES = new Set(["Albert_logo.svg.png", "Lidl-Logo.svg.png", "City-icon.png"]);
+const STATIC_FILES = new Map([
+  ["Albert_logo.svg.png",    "image/png"],
+  ["Lidl-Logo.svg.png",      "image/png"],
+  ["City-icon.png",          "image/png"],
+  ["ComicNeue-Regular.ttf",  "font/ttf"],
+  ["ComicNeue-Bold.ttf",     "font/ttf"],
+]);
 
 async function serveStatic(filename) {
-  if (!STATIC_FILES.has(filename)) {
+  const contentType = STATIC_FILES.get(filename);
+  if (!contentType) {
     return { status: 404, contentType: "text/plain", body: "Not found" };
   }
   const { readFile } = await import("fs/promises");
@@ -25,7 +32,7 @@ async function serveStatic(filename) {
   const filePath = resolve(join(__dirname, "../../res", filename));
   try {
     const data = await readFile(filePath);
-    return { status: 200, contentType: "image/png", body: data, extraHeaders: { "Cache-Control": "public, max-age=604800, immutable" } };
+    return { status: 200, contentType, body: data, extraHeaders: { "Cache-Control": "public, max-age=604800, immutable" } };
   } catch {
     return { status: 404, contentType: "text/plain", body: "Not found" };
   }

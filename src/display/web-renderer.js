@@ -26,8 +26,10 @@ const TRANSITION = "900s ease-in-out";
 
 // CSS extracted as a named constant so it can be read/edited independently
 const CSS = `
+@font-face{font-family:'Comic Neue';font-weight:400;font-style:normal;src:url('/res/ComicNeue-Regular.ttf') format('truetype')}
+@font-face{font-family:'Comic Neue';font-weight:700;font-style:normal;src:url('/res/ComicNeue-Bold.ttf') format('truetype')}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0d0d0d;color:#c8c8c8;font-family:'Comic Sans MS',cursive;font-size:58px;padding:32px;transition:background-color ${TRANSITION},color ${TRANSITION}}
+body{background:#0d0d0d;color:#c8c8c8;font-family:'Comic Neue','Comic Sans MS',cursive;font-size:58px;padding:32px;transition:background-color ${TRANSITION},color ${TRANSITION}}
 body.no-transition,body.no-transition *{transition:none!important}
 #topbar{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:24px}
 #clock{font-size:56px;font-weight:700;color:#fff;letter-spacing:0.04em;transition:color ${TRANSITION}}
