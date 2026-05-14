@@ -37,14 +37,14 @@ body.no-transition,body.no-transition *{transition:none!important}
 #clock-block{display:flex;align-items:baseline;gap:0.4em}
 #clock{font-size:56px;font-weight:700;color:#fff;letter-spacing:0.04em;transition:color ${TRANSITION}}
 #nameday{font-size:30px;color:#aaa;opacity:0.7;transition:color ${TRANSITION}}
-#date{font-size:44px;font-weight:700;color:#aaa;letter-spacing:0.03em;white-space:nowrap;flex-shrink:0;transition:color ${TRANSITION}}
+#date{font-size:44px;font-weight:700;color:#fff;letter-spacing:0.03em;white-space:nowrap;flex-shrink:0;transition:color ${TRANSITION}}
 #temp-block{display:flex;align-items:baseline;gap:0.4em}
 #weather-alert{font-size:28px}
 #temp{font-size:48px;color:#7ecfff;transition:color ${TRANSITION}}
 #temp-apparent{font-size:36px;color:#7ecfff;opacity:0.55;margin-left:0.4em;transition:color ${TRANSITION}}
 table{width:100%;border-collapse:collapse}
 td{padding:24px 0;border-bottom:1px solid #1a1a1a;vertical-align:middle;transition:border-bottom-color ${TRANSITION}}
-td.line{font-weight:700;color:#fff;padding-right:28px;white-space:nowrap;width:80px;transition:color ${TRANSITION}}
+td.line{font-weight:700;color:#aaa;padding-right:28px;white-space:nowrap;width:80px;transition:color ${TRANSITION}}
 td.stop{color:#aaa;font-size:50px;padding-right:28px;white-space:nowrap;transition:color ${TRANSITION}}
 .logo-box{display:inline-block;width:2.5em;text-align:center;vertical-align:middle;margin-right:0.35em;flex-shrink:0}
 .logo-box img{height:0.8em;max-width:100%;vertical-align:middle;opacity:0.85}
@@ -58,7 +58,7 @@ td.mins.urgent .n{color:#ff5050;transition:none}
 .dep-l,.dep-r{font-size:52px;font-weight:700;color:#ff3030;text-shadow:0 0 12px #ff3030,0 0 28px #ff303077;animation-duration:1s;animation-timing-function:linear;animation-iteration-count:infinite;line-height:1;vertical-align:middle}
 .dep-l{animation-name:depL}
 .dep-r{animation-name:depR}
-td.time{color:#fff;text-align:right;white-space:nowrap;width:160px;transition:color ${TRANSITION}}
+td.time{color:#aaa;text-align:right;white-space:nowrap;width:160px;transition:color ${TRANSITION}}
 .delay{color:#ff4444;font-size:34px;margin-left:10px;transition:color ${TRANSITION}}
 @keyframes rowExit{from{transform:translateY(0);opacity:1}to{transform:translateY(-32px);opacity:0}}
 @keyframes rowFlipOut{from{transform:scaleY(1);opacity:1}to{transform:scaleY(0);opacity:0}}
@@ -69,39 +69,39 @@ tr.flip-in{animation:rowFlipIn 1100ms ease-out both;transform-origin:center}
 tr.pre-flip{transform:scaleY(0);opacity:0;transform-origin:center}
 body.day{background-color:#f0ede8;color:#2a2a2a}
 body.day #clock{color:#111}
-body.day #date{color:#555}
+body.day #date{color:#111}
 body.day #temp{color:#0070a0}
 body.day #temp-apparent{color:#0070a0}
 body.day td{border-bottom-color:#d8d4d0}
-body.day td.line{color:#0070a0}
-body.day td.stop{color:#111}
+body.day td.line{color:#555}
+body.day td.stop{color:#555}
 body.day td.mins{color:#c05000}
 body.day td.mins .n{color:#b06000}
-body.day td.time{color:#0070a0}
+body.day td.time{color:#555}
 body.day .delay{color:#c05000}
 body.sunrise{background-color:#fde8c8;color:#3d1a00}
 body.sunrise #clock{color:#2d0e00}
-body.sunrise #date{color:#7a4a20}
+body.sunrise #date{color:#2d0e00}
 body.sunrise #temp{color:#6060a0}
 body.sunrise #temp-apparent{color:#6060a0}
 body.sunrise td{border-bottom-color:#e8c090}
-body.sunrise td.line{color:#2d0e00}
+body.sunrise td.line{color:#8b4820}
 body.sunrise td.stop{color:#8b4820}
 body.sunrise td.mins{color:#d4800a}
 body.sunrise td.mins .n{color:#c06800}
-body.sunrise td.time{color:#2d0e00}
+body.sunrise td.time{color:#8b4820}
 body.sunrise .delay{color:#d4800a}
 body.sunset{background-color:#c04820;color:#ffe8d0}
 body.sunset #clock{color:#fff}
-body.sunset #date{color:#ffccaa}
+body.sunset #date{color:#fff}
 body.sunset #temp{color:#ffe0b0}
 body.sunset #temp-apparent{color:#ffe0b0}
 body.sunset td{border-bottom-color:#a03018}
-body.sunset td.line{color:#fff}
+body.sunset td.line{color:#ffccaa}
 body.sunset td.stop{color:#ffccaa}
 body.sunset td.mins{color:#ffb060}
 body.sunset td.mins .n{color:#ffd080}
-body.sunset td.time{color:#fff}
+body.sunset td.time{color:#ffccaa}
 body.sunset .delay{color:#ffb060}
 body.night .city-logo,body.sunset .city-logo{filter:invert(1)}
 `;
