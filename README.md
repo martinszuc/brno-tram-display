@@ -63,19 +63,7 @@ scripts/
 
 ## Configure stops
 
-Edit `src/config/stops.js` or pass `STOPS` as a JSON env var. For Docker, set it in `docker-compose.yml`:
-
-```yaml
-STOPS: |
-  [
-    { "stopId": "U1398Z2", "name": "Mostecká",    "direction": "", "minMinutes": 2, "logo": "City-icon.png" },
-    { "stopId": "U1782Z2", "name": "Zdráhalova",  "direction": "", "minMinutes": 2, "logo": "City-icon.png" },
-    { "stopId": "U1782Z1", "name": "Zdráhalova",  "direction": "", "minMinutes": 2, "lines": ["5"], "logo": "Albert_logo.svg.png" },
-    { "stopId": "U1667Z2", "name": "Tomanova",    "direction": "", "minMinutes": 3, "logo": "City-icon.png" },
-    { "stopId": "U1667Z1", "name": "Tomanova",    "direction": "", "minMinutes": 3, "lines": ["9"], "logo": "Lidl-Logo.svg.png" },
-    { "stopId": "U1211Z8", "name": "Jugoslávská", "direction": "", "minMinutes": 2, "lines": ["3"], "logo": "City-icon.png" }
-  ]
-```
+Edit `src/config/stops.js` directly:
 
 | Field | Required | Description |
 |-------|----------|-------------|
