@@ -36,13 +36,14 @@ export async function getWeatherBrno() {
     const temp = json?.current?.temperature_2m;
     if (temp == null || Number.isNaN(Number(temp))) throw new Error("unexpected open-meteo response shape");
 
+    const apparent = json?.current?.apparent_temperature;
     const offset = json?.utc_offset_seconds ?? 0;
     const sunrise = json?.daily?.sunrise?.[0] ? toZonedISO(json.daily.sunrise[0], offset) : null;
     const sunset  = json?.daily?.sunset?.[0]  ? toZonedISO(json.daily.sunset[0],  offset) : null;
 
-    cached = { temp: Math.round(temp), sunrise, sunset };
+    cached = { temp: Math.round(temp), apparent: apparent != null ? Math.round(apparent) : null, sunrise, sunset };
     cacheTime = now;
-    console.log(`[openmeteo] ${cached.temp}°C  sunrise=${sunrise}  sunset=${sunset}`);
+    console.log(`[openmeteo] ${cached.temp}°C (pocit ${cached.apparent}°C)  sunrise=${sunrise}  sunset=${sunset}`);
     return cached;
   } catch (err) {
     console.warn("[openmeteo] fetch failed:", err.message);

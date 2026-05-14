@@ -33,6 +33,7 @@ body.no-transition,body.no-transition *{transition:none!important}
 #clock{font-size:56px;font-weight:700;color:#fff;letter-spacing:0.04em;transition:color ${TRANSITION}}
 #date{font-size:44px;font-weight:700;color:#aaa;letter-spacing:0.03em;white-space:nowrap;flex-shrink:0;transition:color ${TRANSITION}}
 #temp{font-size:48px;color:#7ecfff;transition:color ${TRANSITION}}
+#temp-apparent{font-size:28px;color:#7ecfff;opacity:0.55;margin-left:0.4em;transition:color ${TRANSITION}}
 table{width:100%;border-collapse:collapse}
 td{padding:24px 0;border-bottom:1px solid #1a1a1a;vertical-align:middle;transition:border-bottom-color ${TRANSITION}}
 td.line{font-weight:700;color:#fff;padding-right:28px;white-space:nowrap;width:80px;transition:color ${TRANSITION}}
@@ -62,6 +63,7 @@ body.day{background-color:#f0ede8;color:#2a2a2a}
 body.day #clock{color:#111}
 body.day #date{color:#555}
 body.day #temp{color:#0070a0}
+body.day #temp-apparent{color:#0070a0}
 body.day td{border-bottom-color:#d8d4d0}
 body.day td.line{color:#0070a0}
 body.day td.stop{color:#111}
@@ -73,6 +75,7 @@ body.sunrise{background-color:#fde8c8;color:#3d1a00}
 body.sunrise #clock{color:#2d0e00}
 body.sunrise #date{color:#7a4a20}
 body.sunrise #temp{color:#6060a0}
+body.sunrise #temp-apparent{color:#6060a0}
 body.sunrise td{border-bottom-color:#e8c090}
 body.sunrise td.line{color:#2d0e00}
 body.sunrise td.stop{color:#8b4820}
@@ -84,6 +87,7 @@ body.sunset{background-color:#c04820;color:#ffe8d0}
 body.sunset #clock{color:#fff}
 body.sunset #date{color:#ffccaa}
 body.sunset #temp{color:#ffe0b0}
+body.sunset #temp-apparent{color:#ffe0b0}
 body.sunset td{border-bottom-color:#a03018}
 body.sunset td.line{color:#fff}
 body.sunset td.stop{color:#ffccaa}
@@ -160,6 +164,8 @@ const CLIENT_JS = `
       .then(function(data){
         var el=document.getElementById('temp');
         if(el&&data.tempCelsius!=null) el.textContent=data.tempCelsius+'°C';
+        var ap=document.getElementById('temp-apparent');
+        if(ap) ap.textContent=data.apparentCelsius!=null?'('+data.apparentCelsius+'°C)':'';
         if(data.sunrise) srISO=data.sunrise;
         if(data.sunset)  ssISO=data.sunset;
         applyMode();
@@ -305,13 +311,15 @@ export function renderRows(departures) {
 
 /**
  * @param {Array} departures
- * @param {{ temp: number|null, sunrise: string|null, sunset: string|null }|null} weather
+ * @param {{ temp: number|null, apparent: number|null, sunrise: string|null, sunset: string|null }|null} weather
  */
 export function renderHtml(departures, weather) {
   const temp     = weather?.temp     ?? null;
+  const apparent = weather?.apparent ?? null;
   const sunrise  = weather?.sunrise  ?? null;
   const sunset   = weather?.sunset   ?? null;
   const tempHtml = temp != null ? `${temp}°C` : "";
+  const apparentHtml = apparent != null ? `(${apparent}°C)` : "";
   const mode     = computeMode(sunrise, sunset);
 
   return `<!DOCTYPE html>
@@ -329,7 +337,7 @@ export function renderHtml(departures, weather) {
 <div id="topbar">
   <div id="clock">—</div>
   <div id="date"></div>
-  <div id="temp">${tempHtml}</div>
+  <div id="temp">${tempHtml}<span id="temp-apparent">${apparentHtml}</span></div>
 </div>
 <table><tbody hx-get="/api/rows" hx-trigger="every 15s" hx-swap="innerHTML">${buildRows(departures)}</tbody></table>
 <script>${CLIENT_JS}</script>

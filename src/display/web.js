@@ -57,7 +57,8 @@ async function handleRequest(stops, windowMinutes, url, headers) {
   if (url === "/api/weather") {
     const w = await getWeather();
     return { status: 200, contentType: "application/json; charset=utf-8", body: JSON.stringify({
-      tempCelsius: w?.temp ?? null,
+      tempCelsius:     w?.temp     ?? null,
+      apparentCelsius: w?.apparent ?? null,
       sunrise: w?.sunrise ?? null,
       sunset:  w?.sunset  ?? null,
     }) };
