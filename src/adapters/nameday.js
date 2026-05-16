@@ -4,12 +4,15 @@ import { NAMEDAY_URL, TIMEZONE } from "../config/constants.js";
 let cached = null;
 let cachedDate = null;
 
-function getPragueDate() {
-  return new Date().toLocaleDateString("sv", { timeZone: TIMEZONE }); // "2026-05-15"
+// Key by UTC date — the API's /today endpoint is UTC-based, so this prevents
+// caching the wrong name when Prague midnight fires before UTC midnight.
+function getUtcDateStr() {
+  const d = new Date();
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
 }
 
 export async function getNamedaySk() {
-  const today = getPragueDate();
+  const today = getUtcDateStr();
   if (cached !== null && cachedDate === today) return cached;
 
   try {

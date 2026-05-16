@@ -29,9 +29,9 @@ const CSS = `
 @font-face{font-family:'Comic Neue';font-weight:400;font-style:normal;src:url('/res/ComicNeue-Regular.ttf') format('truetype')}
 @font-face{font-family:'Comic Neue';font-weight:700;font-style:normal;src:url('/res/ComicNeue-Bold.ttf') format('truetype')}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0d0d0d;color:#c8c8c8;font-family:'Comic Neue','Comic Sans MS',cursive;font-size:58px;padding:32px;transition:background-color ${TRANSITION},color ${TRANSITION}}
+body{background:#0d0d0d;color:#c8c8c8;font-family:'Comic Neue','Comic Sans MS',cursive;font-size:58px;font-weight:700;padding:32px;transition:background-color ${TRANSITION},color ${TRANSITION}}
 body.no-transition,body.no-transition *{transition:none!important}
-#topbar{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:flex-end;margin-bottom:24px;background:rgba(185,157,255,0.04);border-radius:28px;padding:10px 32px}
+#topbar{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:flex-end;margin-bottom:16px;background:rgba(185,157,255,0.04);border-radius:28px;padding:4px 32px}
 #date{text-align:center}
 #temp-block{justify-self:end}
 #clock-block{display:flex;align-items:baseline;gap:0.4em}
@@ -70,8 +70,9 @@ tr.pre-flip{transform:scaleY(0);opacity:0;transform-origin:center}
 body.day{background-color:#f0ede8;color:#2a2a2a}
 body.day #clock{color:#111}
 body.day #date{color:#111}
-body.day #temp{color:#0070a0}
-body.day #temp-apparent{color:#0070a0}
+body.day #nameday{color:#444;opacity:1}
+body.day #temp{color:#004f7a}
+body.day #temp-apparent{color:#004f7a;opacity:1}
 body.day td{border-bottom-color:#d8d4d0}
 body.day td.line{color:#555}
 body.day td.stop{color:#555}
@@ -170,7 +171,7 @@ const CLIENT_JS = `
     fetch('/api/weather')
       .then(function(r){return r.json();})
       .then(function(data){
-        var el=document.getElementById('temp');
+        var el=document.getElementById('temp-value');
         if(el&&data.tempCelsius!=null) el.textContent=data.tempCelsius+'°C';
         var ap=document.getElementById('temp-apparent');
         if(ap) ap.textContent=data.apparentCelsius!=null?'('+data.apparentCelsius+'°C)':'';
@@ -357,7 +358,7 @@ export function renderHtml(departures, weather, nameday = null) {
   <div id="date"></div>
   <div id="temp-block">
     <div id="weather-alert">${alertHtml}</div>
-    <div id="temp">${tempHtml}<span id="temp-apparent">${apparentHtml}</span></div>
+    <div id="temp"><span id="temp-value">${tempHtml}</span><span id="temp-apparent">${apparentHtml}</span></div>
   </div>
 </div>
 <table><tbody hx-get="/api/rows" hx-trigger="every 15s" hx-swap="innerHTML">${buildRows(departures)}</tbody></table>
