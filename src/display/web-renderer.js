@@ -39,7 +39,9 @@ body.no-transition,body.no-transition *{transition:none!important}
 #nameday{font-size:30px;color:#aaa;opacity:0.7;transition:color ${TRANSITION}}
 #date{font-size:44px;font-weight:700;color:#fff;letter-spacing:0.03em;white-space:nowrap;flex-shrink:0;transition:color ${TRANSITION}}
 #temp-block{display:flex;align-items:baseline;gap:0.4em}
-#weather-alert{font-size:28px}
+#weather-alert{display:flex;align-items:baseline;gap:0.15em}
+.weather-emoji{font-size:50px}
+.weather-text{font-size:28px}
 #temp{font-size:48px;color:#7ecfff;transition:color ${TRANSITION}}
 #temp-apparent{font-size:36px;color:#7ecfff;opacity:0.55;margin-left:0.4em;transition:color ${TRANSITION}}
 table{width:100%;border-collapse:collapse}
@@ -71,6 +73,8 @@ body.day{background-color:#f0ede8;color:#2a2a2a}
 body.day #clock{color:#111}
 body.day #date{color:#111}
 body.day #nameday{color:#444;opacity:1}
+body.sunrise #nameday{color:#6b2e08;opacity:0.85}
+body.sunset #nameday{color:#f0c898;opacity:0.85}
 body.day #temp{color:#004f7a}
 body.day #temp-apparent{color:#004f7a;opacity:1}
 body.day td{border-bottom-color:#d8d4d0}
@@ -176,7 +180,7 @@ const CLIENT_JS = `
         var ap=document.getElementById('temp-apparent');
         if(ap) ap.textContent=data.apparentCelsius!=null?'('+data.apparentCelsius+'°C)':'';
         var wa=document.getElementById('weather-alert');
-        if(wa) wa.textContent=data.weatherAlert||'';
+        if(wa) wa.innerHTML=data.weatherAlert||'';
         var nd=document.getElementById('nameday');
         if(nd&&data.nameday!=null) nd.textContent=data.nameday;
         if(data.sunrise) srISO=data.sunrise;
@@ -322,21 +326,49 @@ export function renderRows(departures) {
   }).join("");
 }
 
-/**
- * @param {Array} departures
- * @param {{ temp: number|null, apparent: number|null, alert: {emoji:string,hoursAhead:number}|null, sunrise: string|null, sunset: string|null }|null} weather
- * @param {string|null} nameday
- */
-export function renderHtml(departures, weather, nameday = null) {
+function buildCycleScript(preview) {
+  const modes = preview.mode
+    ? [preview.mode]
+    : ["night", "day", "sunrise", "sunset"];
+  function alertHtml(emoji) {
+    return emoji ? `<span class="weather-emoji">${emoji}</span><span class="weather-text"> now</span>` : "";
+  }
+  const weatherStates = "weather" in preview
+    ? [alertHtml(preview.weather)]
+    : ["", alertHtml("🌦"), alertHtml("🌧"), alertHtml("🌨"), alertHtml("⛈")];
+  const interval = preview.cycle * 1000;
+  return `<script>(function(){
+  var modes=${JSON.stringify(modes)};
+  var weather=${JSON.stringify(weatherStates)};
+  var mi=0,wi=0;
+  var s=document.createElement('style');
+  s.textContent='body,body *{transition-duration:1.5s!important}';
+  document.head.appendChild(s);
+  function step(){
+    var b=document.body;
+    b.classList.remove('night','day','sunrise','sunset');
+    b.classList.add(modes[mi%modes.length]);
+    var wa=document.getElementById('weather-alert');
+    if(wa) wa.innerHTML=weather[wi%weather.length];
+    mi++;wi++;
+  }
+  step();
+  setInterval(step,${interval});
+})();</script>`;
+}
+
+export function renderHtml(departures, weather, nameday = null, preview = null) {
   const temp     = weather?.temp     ?? null;
   const apparent = weather?.apparent ?? null;
-  const alert    = weather?.alert    ?? null;
   const sunrise  = weather?.sunrise  ?? null;
   const sunset   = weather?.sunset   ?? null;
+  let alert = weather?.alert ?? null;
+  if (preview && "weather" in preview) alert = preview.weather ? { emoji: preview.weather, hoursAhead: 0 } : null;
   const tempHtml     = temp != null ? `${temp}°C` : "";
   const apparentHtml = apparent != null ? `(${apparent}°C)` : "";
-  const alertHtml    = alert ? `${alert.emoji}${alert.hoursAhead ? ` in ${alert.hoursAhead}h` : " now"}` : "";
-  const mode     = computeMode(sunrise, sunset);
+  const alertHtml    = alert ? `<span class="weather-emoji">${alert.emoji}</span><span class="weather-text">${alert.hoursAhead ? ` in ${alert.hoursAhead}h` : " now"}</span>` : "";
+  let mode = computeMode(sunrise, sunset);
+  if (preview?.mode) mode = preview.mode;
 
   return `<!DOCTYPE html>
 <html lang="cs">
@@ -363,6 +395,7 @@ export function renderHtml(departures, weather, nameday = null) {
 </div>
 <table><tbody hx-get="/api/rows" hx-trigger="every 15s" hx-swap="innerHTML">${buildRows(departures)}</tbody></table>
 <script>${CLIENT_JS}</script>
+${preview?.cycle ? buildCycleScript(preview) : ""}
 </body>
 </html>`;
 }

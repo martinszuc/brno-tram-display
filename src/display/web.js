@@ -42,7 +42,22 @@ function rowsFingerprint(deps) {
   return deps.map(d => d.tripId ?? `${d.routeShortName}|${d.stopName}|${d.time.toISOString()}`).join(",");
 }
 
-async function handleRequest(stops, windowMinutes, url, headers) {
+const PREVIEW_WEATHER = { clear: null, drizzle: "🌦", rain: "🌧", snow: "🌨", storm: "⛈" };
+
+function parsePreview(search) {
+  if (!search) return null;
+  const params = new URLSearchParams(search);
+  const preview = {};
+  const mode = params.get("mode");
+  if (["day", "night", "sunrise", "sunset"].includes(mode)) preview.mode = mode;
+  const weather = params.get("weather");
+  if (Object.prototype.hasOwnProperty.call(PREVIEW_WEATHER, weather)) preview.weather = PREVIEW_WEATHER[weather];
+  const cycleParam = params.get("cycle");
+  if (cycleParam !== null) preview.cycle = Math.max(1, parseInt(cycleParam, 10) || 4);
+  return Object.keys(preview).length ? preview : null;
+}
+
+async function handleRequest(stops, windowMinutes, url, headers, search = "") {
   if (url.startsWith("/res/")) {
     return serveStatic(url.slice(5));
   }
@@ -67,7 +82,7 @@ async function handleRequest(stops, windowMinutes, url, headers) {
     return { status: 200, contentType: "application/json; charset=utf-8", body: JSON.stringify({
       tempCelsius:     w?.temp     ?? null,
       apparentCelsius: w?.apparent ?? null,
-      weatherAlert:    alert ? `${alert.emoji}${alert.hoursAhead ? ` in ${alert.hoursAhead}h` : " now"}` : null,
+      weatherAlert:    alert ? `<span class="weather-emoji">${alert.emoji}</span><span class="weather-text">${alert.hoursAhead ? ` in ${alert.hoursAhead}h` : " now"}</span>` : null,
       nameday:         nameday ?? null,
       sunrise: w?.sunrise ?? null,
       sunset:  w?.sunset  ?? null,
@@ -75,12 +90,13 @@ async function handleRequest(stops, windowMinutes, url, headers) {
   }
 
   if (url === "/" || url === "/index.html") {
+    const preview = parsePreview(search);
     const [deps, weather, nameday] = await Promise.all([
       getAllDepartures(stops, windowMinutes),
       getWeather(),
       getNameday(),
     ]);
-    return { status: 200, contentType: "text/html; charset=utf-8", body: renderHtml(deps, weather, nameday) };
+    return { status: 200, contentType: "text/html; charset=utf-8", body: renderHtml(deps, weather, nameday, preview) };
   }
 
   return { status: 404, contentType: "text/plain", body: "Not found" };
@@ -88,10 +104,13 @@ async function handleRequest(stops, windowMinutes, url, headers) {
 
 export function startWebServer(stops, port, windowMinutes = 90) {
   const server = http.createServer(async (req, res) => {
-    const url = (req.url ?? "/").split("?")[0];
+    const raw = req.url ?? "/";
+    const qIdx = raw.indexOf("?");
+    const url = qIdx === -1 ? raw : raw.slice(0, qIdx);
+    const search = qIdx === -1 ? "" : raw.slice(qIdx);
     const t0 = Date.now();
     try {
-      const { status, contentType, body, extraHeaders } = await handleRequest(stops, windowMinutes, url, req.headers);
+      const { status, contentType, body, extraHeaders } = await handleRequest(stops, windowMinutes, url, req.headers, search);
       res.writeHead(status, { "Content-Type": contentType, ...extraHeaders });
       res.end(body);
       console.log(`[web] ${req.method} ${url} ${status} ${Date.now() - t0}ms`);
