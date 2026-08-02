@@ -9,7 +9,7 @@
 
 import http from "http";
 import { getAllDepartures, getWeather, getNameday } from "./web-data.js";
-import { renderHtml, renderJson, renderRows } from "./web-renderer.js";
+import { renderHtml, renderJson, renderRows, buildNamedayHtml } from "./web-renderer.js";
 
 // explicit allowlist — never resolve arbitrary filenames from user input
 const STATIC_FILES = new Map([
@@ -83,7 +83,7 @@ async function handleRequest(stops, windowMinutes, url, headers, search = "") {
       tempCelsius:     w?.temp     ?? null,
       apparentCelsius: w?.apparent ?? null,
       weatherAlert:    alert ? `<span class="weather-emoji">${alert.emoji}</span><span class="weather-text">${alert.hoursAhead ? ` in ${alert.hoursAhead}h` : " now"}</span>` : null,
-      nameday:         nameday ?? null,
+      namedayHtml:     nameday ? buildNamedayHtml(nameday) : null,
       sunrise: w?.sunrise ?? null,
       sunset:  w?.sunset  ?? null,
     }) };

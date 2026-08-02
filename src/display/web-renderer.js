@@ -13,6 +13,14 @@ function htmlEscape(s) {
     .replace(/"/g, "&quot;");
 }
 
+export function buildNamedayHtml(nameday) {
+  if (!nameday) return "";
+  const lines = [];
+  if (nameday.sk) lines.push(`<div class="nameday-line"><span class="flag">🇸🇰</span><span>${htmlEscape(nameday.sk)}</span></div>`);
+  if (nameday.cz) lines.push(`<div class="nameday-line"><span class="flag">🇨🇿</span><span>${htmlEscape(nameday.cz)}</span></div>`);
+  return lines.join("");
+}
+
 function formatTime(date) {
   return date.toLocaleTimeString("cs-CZ", {
     timeZone: TIMEZONE,
@@ -31,12 +39,14 @@ const CSS = `
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0d0d0d;color:#c8c8c8;font-family:'Comic Neue','Comic Sans MS',cursive;font-size:58px;font-weight:700;padding:32px;transition:background-color ${TRANSITION},color ${TRANSITION}}
 body.no-transition,body.no-transition *{transition:none!important}
-#topbar{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:flex-end;margin-bottom:16px;background:rgba(185,157,255,0.04);border-radius:28px;padding:4px 32px}
-#date{text-align:center}
+#topbar{display:grid;grid-template-columns:1fr auto auto;column-gap:28px;align-items:flex-end;margin-bottom:16px;background:rgba(185,157,255,0.04);border-radius:28px;padding:4px 32px}
+#date{text-align:center;white-space:nowrap}
 #temp-block{justify-self:end}
-#clock-block{display:flex;align-items:baseline;gap:0.4em}
-#clock{font-size:56px;font-weight:700;color:#fff;letter-spacing:0.04em;transition:color ${TRANSITION}}
-#nameday{font-size:30px;color:#aaa;opacity:0.7;transition:color ${TRANSITION}}
+#clock-block{display:flex;align-items:center;gap:0.4em;min-width:0}
+#clock{font-size:56px;font-weight:700;color:#fff;letter-spacing:0.04em;flex-shrink:0;transition:color ${TRANSITION}}
+#nameday{font-size:24px;color:#aaa;opacity:0.7;display:flex;flex-direction:column;gap:2px;min-width:0;overflow:hidden;transition:color ${TRANSITION}}
+.nameday-line{display:flex;align-items:baseline;gap:0.3em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.nameday-line .flag{font-size:0.9em;flex-shrink:0}
 #date{font-size:44px;font-weight:700;color:#fff;letter-spacing:0.03em;white-space:nowrap;flex-shrink:0;transition:color ${TRANSITION}}
 #temp-block{display:flex;align-items:baseline;gap:0.4em}
 #weather-alert{display:flex;align-items:baseline;gap:0.15em}
@@ -182,7 +192,7 @@ const CLIENT_JS = `
         var wa=document.getElementById('weather-alert');
         if(wa) wa.innerHTML=data.weatherAlert||'';
         var nd=document.getElementById('nameday');
-        if(nd&&data.nameday!=null) nd.textContent=data.nameday;
+        if(nd&&data.namedayHtml!=null) nd.innerHTML=data.namedayHtml;
         if(data.sunrise) srISO=data.sunrise;
         if(data.sunset)  ssISO=data.sunset;
         applyMode();
@@ -385,7 +395,7 @@ export function renderHtml(departures, weather, nameday = null, preview = null) 
 <div id="topbar">
   <div id="clock-block">
     <div id="clock">—</div>
-    <div id="nameday">${nameday ?? ""}</div>
+    <div id="nameday">${buildNamedayHtml(nameday)}</div>
   </div>
   <div id="date"></div>
   <div id="temp-block">

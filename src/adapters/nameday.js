@@ -8,7 +8,13 @@ function getPragueDateStr() {
   return new Date().toLocaleDateString("en-CA", { timeZone: TIMEZONE });
 }
 
-export async function getNamedaySk() {
+function cleanName(raw) {
+  if (!raw || raw === "n/a") return null;
+  const names = String(raw).split(/[/,]+/).map(s => s.trim()).filter(Boolean);
+  return names.length ? names.join(" / ") : null;
+}
+
+export async function getNameday() {
   const today = getPragueDateStr();
   if (cached !== null && cachedDate === today) return cached;
 
@@ -16,12 +22,12 @@ export async function getNamedaySk() {
     const res = await fetch(NAMEDAY_URL);
     if (!res.ok) throw new Error(`nameday ${res.status}`);
     const json = await res.json();
-    const raw = json?.data?.sk ?? null;
-    if (!raw) throw new Error("unexpected nameday response shape");
-    const names = String(raw).split(/[/,]+/).map(s => s.trim()).filter(Boolean);
-    cached = names.join(" / ");
+    const sk = cleanName(json?.data?.sk);
+    const cz = cleanName(json?.data?.cz);
+    if (!sk && !cz) throw new Error("unexpected nameday response shape");
+    cached = { sk, cz };
     cachedDate = today;
-    console.log(`[nameday] ${today}: ${name}`);
+    console.log(`[nameday] ${today}: sk=${sk ?? "-"} cz=${cz ?? "-"}`);
     return cached;
   } catch (err) {
     console.warn("[nameday] fetch failed:", err.message);
