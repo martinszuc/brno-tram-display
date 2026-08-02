@@ -7,6 +7,7 @@ import fetch from "node-fetch";
 import { parseCsv } from "../utils/csv.js";
 import {
   formatDateForCalendar,
+  dayOfWeekPrague,
   gtfsTimeToMinutesSinceMidnight,
   minutesSinceMidnightPrague,
   nowInPrague,
@@ -44,7 +45,7 @@ function extractAndParse(zip, filename) {
 
 function getActiveServiceIds(calendar, now) {
   const today = formatDateForCalendar(now);
-  const dow = now.getDay();
+  const dow = dayOfWeekPrague(now);
   const dayCol = CALENDAR_DAY_COLUMNS[dow];
   const active = new Set();
   for (const row of calendar) {

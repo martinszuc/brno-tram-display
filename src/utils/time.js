@@ -12,13 +12,27 @@ export function nowInPrague() {
 }
 
 /**
- * Format date as YYYYMMDD for GTFS calendar comparison.
+ * Format date as YYYYMMDD for GTFS calendar comparison, in Prague local time
+ * (not the process's system timezone — matters near midnight when they diverge).
  */
 export function formatDateForCalendar(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}${m}${day}`;
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(d);
+  const map = {};
+  parts.forEach((p) => { map[p.type] = p.value; });
+  return `${map.year}${map.month}${map.day}`;
+}
+
+/**
+ * Day of week (0=Sunday..6=Saturday) in Prague local time.
+ */
+export function dayOfWeekPrague(d) {
+  const weekday = new Intl.DateTimeFormat("en-US", { timeZone: TIMEZONE, weekday: "short" }).format(d);
+  return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(weekday);
 }
 
 /**
