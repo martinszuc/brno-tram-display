@@ -87,6 +87,24 @@ Edit `src/config/stops.js` directly:
 | `STOPS` | (from config) | JSON array of stop objects, overrides `stops.js` |
 | `DEBUG` | unset | Set to `1` for verbose per-trip logging |
 
+## Preview mode (testing display states)
+
+The web display accepts query params on `/` to force a visual state without waiting for real conditions — useful for checking day/night theming or weather icons after a CSS change.
+
+| Param | Values | Effect |
+|-------|--------|--------|
+| `testMode` | `day`, `night`, `sunrise`, `sunset` | Forces the color theme instead of computing it from sunrise/sunset |
+| `testWeather` | `clear`, `drizzle`, `rain`, `snow`, `storm` | Forces the weather alert icon |
+| `testCycle` | seconds (e.g. `5`) | Auto-cycles through modes and/or weather states every N seconds, with sped-up (1.5s) transitions so changes are visible immediately |
+
+Examples:
+```
+http://localhost:3000/?testMode=sunset
+http://localhost:3000/?testWeather=storm
+http://localhost:3000/?testMode=night&testWeather=snow
+http://localhost:3000/?testCycle=5                          # cycles all modes + weather every 5s
+http://localhost:3000/?testWeather=rain&testCycle=5         # weather pinned to rain, only modes cycle
+```
 
 ## Deploy
 
@@ -99,5 +117,3 @@ Manual redeploy:
 ```
 
 The script stops the container, rebuilds the image, restarts, and cleans up dangling images.
-
-test: commit

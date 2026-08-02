@@ -48,11 +48,11 @@ function parsePreview(search) {
   if (!search) return null;
   const params = new URLSearchParams(search);
   const preview = {};
-  const mode = params.get("mode");
+  const mode = params.get("testMode");
   if (["day", "night", "sunrise", "sunset"].includes(mode)) preview.mode = mode;
-  const weather = params.get("weather");
+  const weather = params.get("testWeather");
   if (Object.prototype.hasOwnProperty.call(PREVIEW_WEATHER, weather)) preview.weather = PREVIEW_WEATHER[weather];
-  const cycleParam = params.get("cycle");
+  const cycleParam = params.get("testCycle");
   if (cycleParam !== null) preview.cycle = Math.max(1, parseInt(cycleParam, 10) || 4);
   return Object.keys(preview).length ? preview : null;
 }
