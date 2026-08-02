@@ -208,27 +208,30 @@ const CLIENT_JS = `
     if(fp) currentFp=fp;
     evt.detail.shouldSwap=false;
     var tbody=evt.detail.target;
-    // only animate when there are departed rows to replace
+    // the flip-out wave only plays when a row has actually departed; otherwise
+    // still swap in the fresh data immediately — a frozen table is worse than a missed animation
     var hasDeparted=Array.from(tbody.querySelectorAll('td.mins')).some(function(el){
       return el.classList.contains('is-departed');
     });
-    if(!hasDeparted) return;
     var tmp=document.createElement('tbody');
     tmp.innerHTML=evt.detail.serverResponse;
     var newRows=Array.from(tmp.querySelectorAll('tr'));
     var oldMap={};
     tbody.querySelectorAll('tr').forEach(function(tr){if(tr.dataset.key)oldMap[tr.dataset.key]=tr;});
-    // staggered wave flip-out: first row first, then each subsequent row
     var allRows=Array.from(tbody.querySelectorAll('tr'));
-    allRows.forEach(function(tr,i){
-      tr.classList.remove('flip-out','flip-in');
-      tr.style.animationDelay=(i*STAGGER)+'ms';
-      void tr.offsetWidth;
-      tr.classList.add('flip-out');
-    });
     // cancel any pending flip-in from a previous update
     if(flipTimer)clearTimeout(flipTimer);
-    var flipOutMs=(allRows.length>1?(allRows.length-1)*STAGGER:0)+FLIP_OUT_DURATION;
+    var flipOutMs=0;
+    if(hasDeparted){
+      // staggered wave flip-out: first row first, then each subsequent row
+      allRows.forEach(function(tr,i){
+        tr.classList.remove('flip-out','flip-in');
+        tr.style.animationDelay=(i*STAGGER)+'ms';
+        void tr.offsetWidth;
+        tr.classList.add('flip-out');
+      });
+      flipOutMs=(allRows.length>1?(allRows.length-1)*STAGGER:0)+FLIP_OUT_DURATION;
+    }
     flipTimer=setTimeout(function(){
       flipTimer=null;
       var frag=document.createDocumentFragment();
